@@ -1,14 +1,21 @@
-"""Main module"""
+"""Poor-man REDIS server in Python"""
 
 import socket
 import threading
 
 
 def handle_commands(conn, request):
+    """
+    Handle RESP commands
+    Reference: <https://redis.io/docs/reference/protocol-spec>
+    """
     pass    # TODO
 
 
 def handle_connection(conn, addr):
+    """
+    Handle REDIS connection
+    """
     print(f"DEBUG: handle_connection(conn={conn}, addr={addr})")
     with conn:
         while True:
