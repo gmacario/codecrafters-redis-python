@@ -9,7 +9,37 @@ def handle_commands(conn, request):
     Handle RESP commands
     Reference: <https://redis.io/docs/reference/protocol-spec>
     """
+    print(f"DEBUG: handle_commands(conn={conn}, request={request})")
     pass    # TODO
+
+
+def parse_redis_protocol(data):
+    """
+    Parse RESP (Redis serialization protocol)
+    Reference: <https://redis.io/docs/reference/protocol-spec>
+    """
+    assert data is not None
+    assert len(data) > 0
+
+    lines = data.split(b'\r\n')
+    print(f"DEBUG: parse_redis_protocol: lines={lines}")
+    command = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        # print(f"DEBUG: parse_redis_protocol: line={line}")
+        if line.startswith(b'*'):
+            # The number of arguments
+            pass
+        elif line.startswith(b'$'):
+            # The length of the next argument
+            length = int(line[1:])
+            i += 1 # Move to the next argument
+            argument = lines[i][:length]    # Get the argument with the specified length
+            command.append(argument.decode())   # Assuming UTF-8 enconding
+        i += 1
+    print(f"DEBUG: parse_redis_protocol: return {command}")
+    return command
 
 
 def handle_connection(conn, addr):
@@ -20,21 +50,10 @@ def handle_connection(conn, addr):
     with conn:
         while True:
             data = conn.recv(1024)
-            print(f"DEBUG: Received data={data} from addr={addr}")
             if not data:
                 break   # Client has closed the connection.
-            assert data != None
-            assert len(data) > 0
-            ch = data.decode('utf-8')[0]
-            print(f"DEBUG: ch='{ch}'")
-            if ch == '*':
-                print("TODO: Handling case ch='*'")
-                # TODO
-            elif ch == '$':
-                print("TODO: Handling case ch='$'")
-                # TODO
-            else:
-                print(f"WARNING: Unknown ch={ch}")
+            print(f"DEBUG: Received data={data} from addr={addr}")
+            parse_redis_protocol(data)
             # TODO
             print("DEBUG: Sending reply: PONG")
             conn.sendall(b'+PONG\r\n')
