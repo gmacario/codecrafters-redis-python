@@ -4,29 +4,33 @@ import socket
 import threading
 
 
-def handle_client(connection):
-    print(f"DEBUG: handle_client(connection={connection})")
-    with connection:
+def handle_commands(conn, request):
+    pass    # TODO
+
+
+def handle_connection(conn, addr):
+    print(f"DEBUG: handle_connection(conn={conn}, addr={addr})")
+    with conn:
         while True:
-            data = connection.recv(1024)
-            print(f"DEBUG: Received data={data}")
+            data = conn.recv(1024)
+            print(f"DEBUG: Received data={data} from addr={addr}")
             if not data:
                 break   # Client has closed the connection.
-            assert(data != None)
-            assert(len(data) > 0)
+            assert data != None
+            assert len(data) > 0
             ch = data.decode('utf-8')[0]
             print(f"DEBUG: ch='{ch}'")
-            if (ch == '*'):
+            if ch == '*':
                 print("TODO: Handling case ch='*'")
                 # TODO
-            elif (ch == '$'):
+            elif ch == '$':
                 print("TODO: Handling case ch='$'")
                 # TODO
             else:
                 print(f"WARNING: Unknown ch={ch}")
             # TODO
             print("DEBUG: Sending reply: PONG")
-            connection.sendall(b'+PONG\r\n')
+            conn.sendall(b'+PONG\r\n')
 
 
 def main():
@@ -38,8 +42,8 @@ def main():
     server_socket = socket.create_server(("localhost", 6379), reuse_port=True)
     # print(f"DEBUG: server_socket={server_socket}")
     while True:
-        (connection, _) = server_socket.accept() # wait for client
-        client_thread = threading.Thread(target=handle_client, args=(connection,))
+        (conn, addr) = server_socket.accept() # wait for client
+        client_thread = threading.Thread(target=handle_connection, args=(conn, addr))
         client_thread.start()
 
 
