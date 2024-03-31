@@ -18,8 +18,10 @@ def main():
         with connection:
             while True:
                 data = connection.recv(1024)
+                print(f"DEBUG: Received data={data}")
                 if not data:
                     break   # Client has closed the connection.
+                print("DEBUG: Sending reply: PONG")
                 connection.sendall(b'+PONG\r\n')
 
 
