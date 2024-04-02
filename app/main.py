@@ -42,6 +42,9 @@ def parse_redis_protocol(data):
     return command
 
 
+"""Used for GET and SET commands"""
+redis_keys = {}
+
 def handle_connection(conn, addr):
     """
     Handle REDIS connection
@@ -65,6 +68,24 @@ def handle_connection(conn, addr):
                 conn.sendall(b'+')
                 conn.sendall(echo_response.encode())
                 conn.sendall(b'\r\n')
+            elif cmd == "set":
+                assert len(command) > 2
+                key = command[1]
+                value = command[2]
+                redis_keys[key] = value
+                print(f"DEBUG: SET: value={value}, new redis_keys={redis_keys}")
+                conn.sendall(b'+OK\r\n')
+            elif cmd == "get":
+                assert len(command) > 1
+                key = command[1]
+                value = redis_keys.get(key)
+                print(f"DEBUG: redis_keys={redis_keys}, value={value}")
+                if value is None:
+                    conn.sendall(b'$-1\r\n')
+                else:
+                    response = f"${len(value)}\r\n{value}\r\n".encode()
+                    conn.sendall(response)
+                # print(f"TODO: Implement GET")
             else:
                 print(f"ERROR: Unknown command: {command}")
             # TODO
