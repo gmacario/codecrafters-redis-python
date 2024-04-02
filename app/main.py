@@ -4,13 +4,13 @@ import socket
 import threading
 
 
-def handle_commands(conn, request):
-    """
-    Handle RESP commands
-    Reference: <https://redis.io/docs/reference/protocol-spec>
-    """
-    print(f"DEBUG: handle_commands(conn={conn}, request={request})")
-    pass    # TODO
+# def handle_commands(conn, request):
+#     """
+#     Handle RESP commands
+#     Reference: <https://redis.io/docs/reference/protocol-spec>
+#     """
+#     print(f"DEBUG: handle_commands(conn={conn}, request={request})")
+#     pass    # TODO
 
 
 def parse_redis_protocol(data):
@@ -53,10 +53,21 @@ def handle_connection(conn, addr):
             if not data:
                 break   # Client has closed the connection.
             print(f"DEBUG: Received data={data} from addr={addr}")
-            parse_redis_protocol(data)
+            command = parse_redis_protocol(data)
+            assert len(command) > 0
+            cmd = command[0].lower()
+            if cmd == "ping":
+                print("DEBUG: Sending reply: PONG")
+                conn.sendall(b'+PONG\r\n')
+            elif cmd == "echo":
+                echo_response = ' '.join(command[1:])
+                print(f"DEBUG: Sending reply to ECHO: {echo_response}")
+                conn.sendall(b'+')
+                conn.sendall(echo_response.encode())
+                conn.sendall(b'\r\n')
+            else:
+                print(f"ERROR: Unknown command: {command}")
             # TODO
-            print("DEBUG: Sending reply: PONG")
-            conn.sendall(b'+PONG\r\n')
 
 
 def main():
